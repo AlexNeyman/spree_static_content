@@ -12,6 +12,7 @@ class Spree::Page < ActiveRecord::Base
   scope :visible, -> { where(visible: true) }
   scope :header_links, -> { where(show_in_header: true).visible }
   scope :sidebar_links, -> { where(show_in_sidebar: true).visible }
+  scope :news, -> { where(show_in_news: true).visible.reorder(created_at: :desc) }
 
   scope :by_store, ->(store) { joins(:stores).where('spree_pages_stores.store_id = ?', store) }
 
@@ -25,6 +26,22 @@ class Spree::Page < ActiveRecord::Base
 
   def link
     foreign_link.blank? ? slug : foreign_link
+  end
+
+  def body_before_cut
+    if cut? && body.present?
+      body.split(cut)[0].rstrip
+    else
+      body
+    end
+  end
+
+  def cut?
+    cut.present? && !!body.index(cut)
+  end
+
+  def cut
+    Spree::Config[:page_cut]
   end
 
   private

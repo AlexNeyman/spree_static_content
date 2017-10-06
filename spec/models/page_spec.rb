@@ -24,6 +24,24 @@ RSpec.describe Spree::Page, type: :model do
     end
   end
 
+  context '.body_before_cut' do
+    let!(:page) { create(:page, body: <<-TEXT) }
+Boom-boom!
+
+__________
+
+Now, that's a content.
+TEXT
+
+    before do
+      Spree::Config[:page_cut] = '__________'
+    end
+
+    specify {
+      expect { page.content_before_cut.to eq('Boom-boom!') }
+    }
+  end
+
   context 'pages in stores' do
     before do
       @store = create(:store)
